@@ -53,6 +53,7 @@ export class Viewport extends Disposable implements IViewport {
     private readonly _viewportElement: HTMLElement,
     private readonly _scrollArea: HTMLElement,
     private readonly _element: HTMLElement,
+    private readonly _parentWindow: Window & typeof globalThis,
     @IBufferService private readonly _bufferService: IBufferService,
     @IOptionsService private readonly _optionsService: IOptionsService,
     @ICharSizeService private readonly _charSizeService: ICharSizeService,
@@ -93,13 +94,13 @@ export class Viewport extends Disposable implements IViewport {
       return;
     }
     if (this._refreshAnimationFrame === null) {
-      this._refreshAnimationFrame = requestAnimationFrame(() => this._innerRefresh());
+      this._refreshAnimationFrame = this._parentWindow.requestAnimationFrame(() => this._innerRefresh());
     }
   }
 
   private _innerRefresh(): void {
     if (this._charSizeService.height > 0) {
-      this._currentRowHeight = this._renderService.dimensions.scaledCellHeight / window.devicePixelRatio;
+      this._currentRowHeight = this._renderService.dimensions.scaledCellHeight / this._parentWindow.devicePixelRatio;
       this._currentScaledCellHeight = this._renderService.dimensions.scaledCellHeight;
       this._lastRecordedViewportHeight = this._viewportElement.offsetHeight;
       const newBufferHeight = Math.round(this._currentRowHeight * this._lastRecordedBufferLength) + (this._lastRecordedViewportHeight - this._renderService.dimensions.canvasHeight);
@@ -191,7 +192,7 @@ export class Viewport extends Disposable implements IViewport {
 
     // Continue or finish smooth scroll
     if (percent < 1) {
-      window.requestAnimationFrame(() => this._smoothScroll());
+      this._parentWindow.requestAnimationFrame(() => this._smoothScroll());
     } else {
       this._clearSmoothScrollState();
     }

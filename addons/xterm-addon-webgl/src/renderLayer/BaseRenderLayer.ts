@@ -25,8 +25,13 @@ export abstract class BaseRenderLayer implements IRenderLayer {
 
   protected _charAtlas: WebglCharAtlas | undefined;
 
+  private get _devicePixelRatio(): number {
+    return this._parentWindow.devicePixelRatio;
+  }
+
   constructor(
     private _container: HTMLElement,
+    protected _parentWindow: Window & typeof globalThis,
     id: string,
     zIndex: number,
     private _alpha: boolean,
@@ -93,7 +98,7 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     if (this._scaledCharWidth <= 0 && this._scaledCharHeight <= 0) {
       return;
     }
-    this._charAtlas = acquireCharAtlas(terminal, colorSet, this._scaledCellWidth, this._scaledCellHeight, this._scaledCharWidth, this._scaledCharHeight);
+    this._charAtlas = acquireCharAtlas(terminal, colorSet, this._scaledCellWidth, this._scaledCellHeight, this._scaledCharWidth, this._scaledCharHeight, this._devicePixelRatio);
     this._charAtlas.warmUp();
   }
 
@@ -143,9 +148,9 @@ export abstract class BaseRenderLayer implements IRenderLayer {
   protected _fillBottomLineAtCells(x: number, y: number, width: number = 1): void {
     this._ctx.fillRect(
       x * this._scaledCellWidth,
-      (y + 1) * this._scaledCellHeight - window.devicePixelRatio - 1 /* Ensure it's drawn within the cell */,
+      (y + 1) * this._scaledCellHeight - this._devicePixelRatio - 1 /* Ensure it's drawn within the cell */,
       width * this._scaledCellWidth,
-      window.devicePixelRatio);
+      this._devicePixelRatio);
   }
 
   /**
@@ -158,7 +163,7 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     this._ctx.fillRect(
       x * this._scaledCellWidth,
       y * this._scaledCellHeight,
-      window.devicePixelRatio * width,
+      this._devicePixelRatio * width,
       this._scaledCellHeight);
   }
 
@@ -169,12 +174,12 @@ export abstract class BaseRenderLayer implements IRenderLayer {
    * @param y The row to fill.
    */
   protected _strokeRectAtCell(x: number, y: number, width: number, height: number): void {
-    this._ctx.lineWidth = window.devicePixelRatio;
+    this._ctx.lineWidth = this._devicePixelRatio;
     this._ctx.strokeRect(
-      x * this._scaledCellWidth + window.devicePixelRatio / 2,
-      y * this._scaledCellHeight + (window.devicePixelRatio / 2),
-      width * this._scaledCellWidth - window.devicePixelRatio,
-      (height * this._scaledCellHeight) - window.devicePixelRatio);
+      x * this._scaledCellWidth + this._devicePixelRatio / 2,
+      y * this._scaledCellHeight + (this._devicePixelRatio / 2),
+      width * this._scaledCellWidth - this._devicePixelRatio,
+      (height * this._scaledCellHeight) - this._devicePixelRatio);
   }
 
   /**
@@ -257,7 +262,7 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     const fontWeight = isBold ? terminal.options.fontWeightBold : terminal.options.fontWeight;
     const fontStyle = isItalic ? 'italic' : '';
 
-    return `${fontStyle} ${fontWeight} ${terminal.options.fontSize! * window.devicePixelRatio}px ${terminal.options.fontFamily}`;
+    return `${fontStyle} ${fontWeight} ${terminal.options.fontSize! * this._devicePixelRatio}px ${terminal.options.fontFamily}`;
   }
 }
 

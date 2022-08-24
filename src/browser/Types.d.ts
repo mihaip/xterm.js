@@ -13,6 +13,7 @@ import { IFunctionIdentifier, IParams } from 'common/parser/Types';
 export interface ITerminal extends IPublicTerminal, ICoreTerminal {
   element: HTMLElement | undefined;
   screenElement: HTMLElement | undefined;
+  readonly parentWindow: Window & typeof globalThis;
   browser: IBrowser;
   buffer: IBuffer;
   viewport: IViewport | undefined;

@@ -144,6 +144,7 @@ export class MockTerminal implements ITerminal {
   public options: ITerminalOptions = {};
   public element!: HTMLElement;
   public screenElement!: HTMLElement;
+  public parentWindow!: Window & typeof globalThis;
   public rowContainer!: HTMLElement;
   public selectionContainer!: HTMLElement;
   public selectionService!: ISelectionService;

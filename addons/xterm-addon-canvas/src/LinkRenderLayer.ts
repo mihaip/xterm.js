@@ -15,6 +15,7 @@ export class LinkRenderLayer extends BaseRenderLayer {
 
   constructor(
     container: HTMLElement,
+    parentWindow: Window & typeof globalThis,
     zIndex: number,
     colors: IColorSet,
     rendererId: number,
@@ -23,7 +24,7 @@ export class LinkRenderLayer extends BaseRenderLayer {
     optionsService: IOptionsService,
     decorationService: IDecorationService
   ) {
-    super(container, 'link', zIndex, true, colors, rendererId, bufferService, optionsService, decorationService);
+    super(container, parentWindow, 'link', zIndex, true, colors, rendererId, bufferService, optionsService, decorationService);
 
     linkifier2.onShowLinkUnderline(e => this._onShowLinkUnderline(e));
     linkifier2.onHideLinkUnderline(e => this._onHideLinkUnderline(e));

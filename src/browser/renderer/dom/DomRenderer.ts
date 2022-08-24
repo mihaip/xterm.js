@@ -47,6 +47,7 @@ export class DomRenderer extends Disposable implements IRenderer {
     private readonly _element: HTMLElement,
     private readonly _screenElement: HTMLElement,
     private readonly _viewportElement: HTMLElement,
+    private readonly _parentWindow: Window & typeof globalThis,
     private readonly _linkifier2: ILinkifier2,
     @IInstantiationService instantiationService: IInstantiationService,
     @ICharSizeService private readonly _charSizeService: ICharSizeService,
@@ -101,16 +102,16 @@ export class DomRenderer extends Disposable implements IRenderer {
   }
 
   private _updateDimensions(): void {
-    this.dimensions.scaledCharWidth = this._charSizeService.width * window.devicePixelRatio;
-    this.dimensions.scaledCharHeight = Math.ceil(this._charSizeService.height * window.devicePixelRatio);
+    this.dimensions.scaledCharWidth = this._charSizeService.width * this._parentWindow.devicePixelRatio;
+    this.dimensions.scaledCharHeight = Math.ceil(this._charSizeService.height * this._parentWindow.devicePixelRatio);
     this.dimensions.scaledCellWidth = this.dimensions.scaledCharWidth + Math.round(this._optionsService.rawOptions.letterSpacing);
     this.dimensions.scaledCellHeight = Math.floor(this.dimensions.scaledCharHeight * this._optionsService.rawOptions.lineHeight);
     this.dimensions.scaledCharLeft = 0;
     this.dimensions.scaledCharTop = 0;
     this.dimensions.scaledCanvasWidth = this.dimensions.scaledCellWidth * this._bufferService.cols;
     this.dimensions.scaledCanvasHeight = this.dimensions.scaledCellHeight * this._bufferService.rows;
-    this.dimensions.canvasWidth = Math.round(this.dimensions.scaledCanvasWidth / window.devicePixelRatio);
-    this.dimensions.canvasHeight = Math.round(this.dimensions.scaledCanvasHeight / window.devicePixelRatio);
+    this.dimensions.canvasWidth = Math.round(this.dimensions.scaledCanvasWidth / this._parentWindow.devicePixelRatio);
+    this.dimensions.canvasHeight = Math.round(this.dimensions.scaledCanvasHeight / this._parentWindow.devicePixelRatio);
     this.dimensions.actualCellWidth = this.dimensions.canvasWidth / this._bufferService.cols;
     this.dimensions.actualCellHeight = this.dimensions.canvasHeight / this._bufferService.rows;
 

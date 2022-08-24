@@ -32,6 +32,7 @@ export class TextRenderLayer extends BaseRenderLayer {
 
   constructor(
     container: HTMLElement,
+    parentWindow: Window & typeof globalThis,
     zIndex: number,
     colors: IColorSet,
     alpha: boolean,
@@ -41,7 +42,7 @@ export class TextRenderLayer extends BaseRenderLayer {
     private readonly _characterJoinerService: ICharacterJoinerService,
     decorationService: IDecorationService
   ) {
-    super(container, 'text', zIndex, alpha, colors, rendererId, bufferService, optionsService, decorationService);
+    super(container, parentWindow, 'text', zIndex, alpha, colors, rendererId, bufferService, optionsService, decorationService);
     this._state = new GridCache<CharData>();
   }
 
@@ -282,8 +283,8 @@ export class TextRenderLayer extends BaseRenderLayer {
           }
           switch (cell.extended.underlineStyle) {
             case UnderlineStyle.DOUBLE:
-              this._fillBottomLineAtCells(x, y, cell.getWidth(), -window.devicePixelRatio);
-              this._fillBottomLineAtCells(x, y, cell.getWidth(), window.devicePixelRatio);
+              this._fillBottomLineAtCells(x, y, cell.getWidth(), -this._parentWindow.devicePixelRatio);
+              this._fillBottomLineAtCells(x, y, cell.getWidth(), this._parentWindow.devicePixelRatio);
               break;
             case UnderlineStyle.CURLY:
               this._curlyUnderlineAtCell(x, y, cell.getWidth());

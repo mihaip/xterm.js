@@ -28,8 +28,9 @@ export class CanvasAddon implements ITerminalAddon {
     const optionsService: IOptionsService = (terminal as any)._core.optionsService;
     const colors: IColorSet = (terminal as any)._core._colorManager.colors;
     const screenElement: HTMLElement = (terminal as any)._core.screenElement;
+    const parentWindow: Window & typeof globalThis = (terminal as any)._core.parentWindow;
     const linkifier = (terminal as any)._core.linkifier2;
-    this._renderer = new CanvasRenderer(colors, screenElement, linkifier, bufferService, charSizeService, optionsService, characterJoinerService, coreService, coreBrowserService, decorationService);
+    this._renderer = new CanvasRenderer(colors, screenElement, parentWindow, linkifier, bufferService, charSizeService, optionsService, characterJoinerService, coreService, coreBrowserService, decorationService);
     renderService.setRenderer(this._renderer);
     renderService.onResize(bufferService.cols, bufferService.rows);
   }

@@ -13,8 +13,14 @@ import { IRenderDimensions } from 'browser/renderer/Types';
 export class LinkRenderLayer extends BaseRenderLayer {
   private _state: ILinkifierEvent | undefined;
 
-  constructor(container: HTMLElement, zIndex: number, colors: IColorSet, terminal: ITerminal) {
-    super(container, 'link', zIndex, true, colors);
+  constructor(
+    container: HTMLElement,
+    parentWindow: Window & typeof globalThis,
+    zIndex: number,
+    colors: IColorSet,
+    terminal: ITerminal
+  ) {
+    super(container, parentWindow, 'link', zIndex, true, colors);
 
     terminal.linkifier2.onShowLinkUnderline(e => this._onShowLinkUnderline(e));
     terminal.linkifier2.onHideLinkUnderline(e => this._onHideLinkUnderline(e));

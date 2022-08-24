@@ -22,6 +22,7 @@ export class SelectionRenderLayer extends BaseRenderLayer {
 
   constructor(
     container: HTMLElement,
+    parentWindow: Window & typeof globalThis,
     zIndex: number,
     colors: IColorSet,
     rendererId: number,
@@ -30,7 +31,7 @@ export class SelectionRenderLayer extends BaseRenderLayer {
     decorationService: IDecorationService,
     optionsService: IOptionsService
   ) {
-    super(container, 'selection', zIndex, true, colors, rendererId, bufferService, optionsService, decorationService);
+    super(container, parentWindow, 'selection', zIndex, true, colors, rendererId, bufferService, optionsService, decorationService);
     this._clearState();
   }
 

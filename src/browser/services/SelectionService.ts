@@ -123,6 +123,7 @@ export class SelectionService extends Disposable implements ISelectionService {
   constructor(
     private readonly _element: HTMLElement,
     private readonly _screenElement: HTMLElement,
+    private readonly _parentWindow: Window & typeof globalThis,
     private readonly _linkifier: ILinkifier2,
     @IBufferService private readonly _bufferService: IBufferService,
     @ICoreService private readonly _coreService: ICoreService,
@@ -270,7 +271,7 @@ export class SelectionService extends Disposable implements ISelectionService {
   public refresh(isLinuxMouseSelection?: boolean): void {
     // Queue the refresh for the renderer
     if (!this._refreshAnimationFrame) {
-      this._refreshAnimationFrame = window.requestAnimationFrame(() => this._refresh());
+      this._refreshAnimationFrame = this._parentWindow.requestAnimationFrame(() => this._refresh());
     }
 
     // If the platform is Linux and the refresh call comes from a mouse event,
@@ -406,7 +407,7 @@ export class SelectionService extends Disposable implements ISelectionService {
    * @param event The mouse event.
    */
   private _getMouseEventScrollAmount(event: MouseEvent): number {
-    let offset = getCoordsRelativeToElement(window, event, this._screenElement)[1];
+    let offset = getCoordsRelativeToElement(this._parentWindow, event, this._screenElement)[1];
     const terminalHeight = this._renderService.dimensions.canvasHeight;
     if (offset >= 0 && offset <= terminalHeight) {
       return 0;
@@ -491,7 +492,7 @@ export class SelectionService extends Disposable implements ISelectionService {
       this._screenElement.ownerDocument.addEventListener('mousemove', this._mouseMoveListener);
       this._screenElement.ownerDocument.addEventListener('mouseup', this._mouseUpListener);
     }
-    this._dragScrollIntervalTimer = window.setInterval(() => this._dragScroll(), DRAG_SCROLL_INTERVAL);
+    this._dragScrollIntervalTimer = this._parentWindow.setInterval(() => this._dragScroll(), DRAG_SCROLL_INTERVAL);
   }
 
   /**
@@ -502,7 +503,7 @@ export class SelectionService extends Disposable implements ISelectionService {
       this._screenElement.ownerDocument.removeEventListener('mousemove', this._mouseMoveListener);
       this._screenElement.ownerDocument.removeEventListener('mouseup', this._mouseUpListener);
     }
-    clearInterval(this._dragScrollIntervalTimer);
+    this._parentWindow.clearInterval(this._dragScrollIntervalTimer);
     this._dragScrollIntervalTimer = undefined;
   }
 

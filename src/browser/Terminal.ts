@@ -63,6 +63,9 @@ export class Terminal extends CoreTerminal implements ITerminal {
   public textarea: HTMLTextAreaElement | undefined;
   public element: HTMLElement | undefined;
   public screenElement: HTMLElement | undefined;
+  public get parentWindow(): Window & typeof globalThis {
+    return this._document?.defaultView ?? window;
+  }
 
   private _document: Document | undefined;
   private _viewportScrollArea: HTMLElement | undefined;
@@ -320,6 +323,7 @@ export class Terminal extends CoreTerminal implements ITerminal {
    * Binds the desired focus behavior on a given terminal object.
    */
   private _onTextAreaFocus(ev: KeyboardEvent): void {
+    console.log('focus');
     if (this.coreService.decPrivateModes.sendFocus) {
       this.coreService.triggerDataEvent(C0.ESC + '[I');
     }
@@ -341,6 +345,7 @@ export class Terminal extends CoreTerminal implements ITerminal {
    * Binds the desired blur behavior on a given terminal object.
    */
   private _onTextAreaBlur(): void {
+    console.log('blur');
     // Text can safely be removed on blur. Doing it earlier could interfere with
     // screen readers reading it out.
     this.textarea!.value = '';
@@ -510,7 +515,7 @@ export class Terminal extends CoreTerminal implements ITerminal {
     this._instantiationService.setService(ICharacterJoinerService, this._characterJoinerService);
 
     const renderer = this._createRenderer();
-    this._renderService = this.register(this._instantiationService.createInstance(RenderService, renderer, this.rows, this.screenElement));
+    this._renderService = this.register(this._instantiationService.createInstance(RenderService, renderer, this.rows, this.screenElement, this.parentWindow));
     this._instantiationService.setService(IRenderService, this._renderService);
     this.register(this._renderService.onRenderedViewportChange(e => this._onRender.fire(e)));
     this.onResize(e => this._renderService!.resize(e.cols, e.rows));
@@ -530,7 +535,8 @@ export class Terminal extends CoreTerminal implements ITerminal {
       (amount: number) => this.scrollLines(amount, true, ScrollSource.VIEWPORT),
       this._viewportElement,
       this._viewportScrollArea,
-      this.element
+      this.element,
+      this.parentWindow
     );
     this.viewport.onThemeChange(this._colorManager.colors);
     this.register(this._inputHandler.onRequestSyncScrollBar(() => this.viewport!.syncScrollArea()));
@@ -548,6 +554,7 @@ export class Terminal extends CoreTerminal implements ITerminal {
     this._selectionService = this.register(this._instantiationService.createInstance(SelectionService,
       this.element,
       this.screenElement,
+      this.parentWindow,
       this.linkifier2
     ));
     this._instantiationService.setService(ISelectionService, this._selectionService);
@@ -587,11 +594,11 @@ export class Terminal extends CoreTerminal implements ITerminal {
     }
 
     if (this.options.overviewRulerWidth) {
-      this._overviewRulerRenderer = this.register(this._instantiationService.createInstance(OverviewRulerRenderer, this._viewportElement, this.screenElement));
+      this._overviewRulerRenderer = this.register(this._instantiationService.createInstance(OverviewRulerRenderer, this._viewportElement, this.screenElement, this.parentWindow));
     }
     this.optionsService.onOptionChange(() => {
       if (!this._overviewRulerRenderer && this.options.overviewRulerWidth && this._viewportElement && this.screenElement) {
-        this._overviewRulerRenderer = this.register(this._instantiationService.createInstance(OverviewRulerRenderer, this._viewportElement, this.screenElement));
+        this._overviewRulerRenderer = this.register(this._instantiationService.createInstance(OverviewRulerRenderer, this._viewportElement, this.screenElement, this.parentWindow));
       }
     });
     // Measure the character size
@@ -609,7 +616,8 @@ export class Terminal extends CoreTerminal implements ITerminal {
   }
 
   private _createRenderer(): IRenderer {
-    return this._instantiationService.createInstance(DomRenderer, this._colorManager!.colors, this.element!, this.screenElement!, this._viewportElement!, this.linkifier2);
+    const renderer = this._instantiationService.createInstance(DomRenderer, this._colorManager!.colors, this.element!, this.screenElement!, this._viewportElement!, this.parentWindow, this.linkifier2);
+    return renderer;
   }
 
   /**

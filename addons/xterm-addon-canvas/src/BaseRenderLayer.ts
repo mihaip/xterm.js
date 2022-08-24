@@ -49,10 +49,15 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     italic: false
   };
 
+  private get _devicePixelRatio(): number {
+    return this._parentWindow.devicePixelRatio;
+  }
+
   public get canvas(): HTMLCanvasElement { return this._canvas; }
 
   constructor(
     private _container: HTMLElement,
+    protected _parentWindow: Window & typeof globalThis,
     id: string,
     zIndex: number,
     private _alpha: boolean,
@@ -125,7 +130,7 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     if (this._scaledCharWidth <= 0 && this._scaledCharHeight <= 0) {
       return;
     }
-    this._charAtlas = acquireCharAtlas(this._optionsService.rawOptions, this._rendererId, colorSet, this._scaledCharWidth, this._scaledCharHeight);
+    this._charAtlas = acquireCharAtlas(this._optionsService.rawOptions, this._rendererId, colorSet, this._scaledCharWidth, this._scaledCharHeight, this._devicePixelRatio);
     this._charAtlas.warmUp();
   }
 
@@ -180,9 +185,9 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     const cellOffset = Math.ceil(this._scaledCellHeight * 0.5);
     this._ctx.fillRect(
       x * this._scaledCellWidth,
-      (y + 1) * this._scaledCellHeight - cellOffset - window.devicePixelRatio,
+      (y + 1) * this._scaledCellHeight - cellOffset - this._devicePixelRatio,
       width * this._scaledCellWidth,
-      window.devicePixelRatio);
+      this._devicePixelRatio);
   }
 
   /**
@@ -194,23 +199,23 @@ export abstract class BaseRenderLayer implements IRenderLayer {
   protected _fillBottomLineAtCells(x: number, y: number, width: number = 1, pixelOffset: number = 0): void {
     this._ctx.fillRect(
       x * this._scaledCellWidth,
-      (y + 1) * this._scaledCellHeight + pixelOffset - window.devicePixelRatio - 1 /* Ensure it's drawn within the cell */,
+      (y + 1) * this._scaledCellHeight + pixelOffset - this._devicePixelRatio - 1 /* Ensure it's drawn within the cell */,
       width * this._scaledCellWidth,
-      window.devicePixelRatio);
+      this._devicePixelRatio);
   }
 
   protected _curlyUnderlineAtCell(x: number, y: number, width: number = 1): void {
     this._ctx.save();
     this._ctx.beginPath();
     this._ctx.strokeStyle = this._ctx.fillStyle;
-    this._ctx.lineWidth = window.devicePixelRatio;
+    this._ctx.lineWidth = this._devicePixelRatio;
     for (let xOffset = 0; xOffset < width; xOffset++) {
       const xLeft = (x + xOffset) * this._scaledCellWidth;
       const xMid = (x + xOffset + 0.5) * this._scaledCellWidth;
       const xRight = (x + xOffset + 1) * this._scaledCellWidth;
-      const yMid = (y + 1) * this._scaledCellHeight - window.devicePixelRatio - 1;
-      const yMidBot = yMid - window.devicePixelRatio;
-      const yMidTop = yMid + window.devicePixelRatio;
+      const yMid = (y + 1) * this._scaledCellHeight - this._devicePixelRatio - 1;
+      const yMidBot = yMid - this._devicePixelRatio;
+      const yMidTop = yMid + this._devicePixelRatio;
       this._ctx.moveTo(xLeft, yMid);
       this._ctx.bezierCurveTo(
         xLeft, yMidBot,
@@ -231,10 +236,10 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     this._ctx.save();
     this._ctx.beginPath();
     this._ctx.strokeStyle = this._ctx.fillStyle;
-    this._ctx.lineWidth = window.devicePixelRatio;
-    this._ctx.setLineDash([window.devicePixelRatio * 2, window.devicePixelRatio]);
+    this._ctx.lineWidth = this._devicePixelRatio;
+    this._ctx.setLineDash([this._devicePixelRatio * 2, this._devicePixelRatio]);
     const xLeft = x * this._scaledCellWidth;
-    const yMid = (y + 1) * this._scaledCellHeight - window.devicePixelRatio - 1;
+    const yMid = (y + 1) * this._scaledCellHeight - this._devicePixelRatio - 1;
     this._ctx.moveTo(xLeft, yMid);
     for (let xOffset = 0; xOffset < width; xOffset++) {
       // const xLeft = x * this._scaledCellWidth;
@@ -250,11 +255,11 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     this._ctx.save();
     this._ctx.beginPath();
     this._ctx.strokeStyle = this._ctx.fillStyle;
-    this._ctx.lineWidth = window.devicePixelRatio;
-    this._ctx.setLineDash([window.devicePixelRatio * 4, window.devicePixelRatio * 3]);
+    this._ctx.lineWidth = this._devicePixelRatio;
+    this._ctx.setLineDash([this._devicePixelRatio * 4, this._devicePixelRatio * 3]);
     const xLeft = x * this._scaledCellWidth;
     const xRight = (x + width) * this._scaledCellWidth;
-    const yMid = (y + 1) * this._scaledCellHeight - window.devicePixelRatio - 1;
+    const yMid = (y + 1) * this._scaledCellHeight - this._devicePixelRatio - 1;
     this._ctx.moveTo(xLeft, yMid);
     this._ctx.lineTo(xRight, yMid);
     this._ctx.stroke();
@@ -272,7 +277,7 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     this._ctx.fillRect(
       x * this._scaledCellWidth,
       y * this._scaledCellHeight,
-      window.devicePixelRatio * width,
+      this._devicePixelRatio * width,
       this._scaledCellHeight);
   }
 
@@ -283,12 +288,12 @@ export abstract class BaseRenderLayer implements IRenderLayer {
    * @param y The row to fill.
    */
   protected _strokeRectAtCell(x: number, y: number, width: number, height: number): void {
-    this._ctx.lineWidth = window.devicePixelRatio;
+    this._ctx.lineWidth = this._devicePixelRatio;
     this._ctx.strokeRect(
-      x * this._scaledCellWidth + window.devicePixelRatio / 2,
-      y * this._scaledCellHeight + (window.devicePixelRatio / 2),
-      width * this._scaledCellWidth - window.devicePixelRatio,
-      (height * this._scaledCellHeight) - window.devicePixelRatio);
+      x * this._scaledCellWidth + this._devicePixelRatio / 2,
+      y * this._scaledCellHeight + (this._devicePixelRatio / 2),
+      width * this._scaledCellWidth - this._devicePixelRatio,
+      (height * this._scaledCellHeight) - this._devicePixelRatio);
   }
 
   /**
@@ -510,7 +515,7 @@ export abstract class BaseRenderLayer implements IRenderLayer {
     const fontWeight = isBold ? this._optionsService.rawOptions.fontWeightBold : this._optionsService.rawOptions.fontWeight;
     const fontStyle = isItalic ? 'italic' : '';
 
-    return `${fontStyle} ${fontWeight} ${this._optionsService.rawOptions.fontSize * window.devicePixelRatio}px ${this._optionsService.rawOptions.fontFamily}`;
+    return `${fontStyle} ${fontWeight} ${this._optionsService.rawOptions.fontSize * this._devicePixelRatio}px ${this._optionsService.rawOptions.fontFamily}`;
   }
 
   private _getContrastColor(cell: CellData, x: number, y: number): IColor | undefined {

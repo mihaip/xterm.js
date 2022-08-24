@@ -48,6 +48,7 @@ export class OverviewRulerRenderer extends Disposable {
   constructor(
     private readonly _viewportElement: HTMLElement,
     private readonly _screenElement: HTMLElement,
+    private readonly _parentWindow: Window & typeof globalThis,
     @IBufferService private readonly _bufferService: IBufferService,
     @IDecorationService private readonly _decorationService: IDecorationService,
     @IRenderService private readonly _renderService: IRenderService,
@@ -112,7 +113,7 @@ export class OverviewRulerRenderer extends Disposable {
       }
     }));
     // device pixel ratio changed
-    this.register(addDisposableDomListener(window, 'resize', () => {
+    this.register(addDisposableDomListener(this._parentWindow, 'resize', () => {
       this._queueRefresh(true);
     }));
     // set the canvas dimensions
@@ -142,11 +143,11 @@ export class OverviewRulerRenderer extends Disposable {
   }
 
   private _refreshDrawHeightConstants(): void {
-    drawHeight.full = Math.round(2 * window.devicePixelRatio);
+    drawHeight.full = Math.round(2 * this._parentWindow.devicePixelRatio);
     // Calculate actual pixels per line
     const pixelsPerLine = this._canvas.height / this._bufferService.buffer.lines.length;
     // Clamp actual pixels within a range
-    const nonFullHeight = Math.round(Math.max(Math.min(pixelsPerLine, 12), 6) * window.devicePixelRatio);
+    const nonFullHeight = Math.round(Math.max(Math.min(pixelsPerLine, 12), 6) * this._parentWindow.devicePixelRatio);
     drawHeight.left = nonFullHeight;
     drawHeight.center = nonFullHeight;
     drawHeight.right = nonFullHeight;
@@ -164,9 +165,9 @@ export class OverviewRulerRenderer extends Disposable {
 
   private _refreshCanvasDimensions(): void {
     this._canvas.style.width = `${this._width}px`;
-    this._canvas.width = Math.round(this._width * window.devicePixelRatio);
+    this._canvas.width = Math.round(this._width * this._parentWindow.devicePixelRatio);
     this._canvas.style.height = `${this._screenElement.clientHeight}px`;
-    this._canvas.height = Math.round(this._screenElement.clientHeight * window.devicePixelRatio);
+    this._canvas.height = Math.round(this._screenElement.clientHeight * this._parentWindow.devicePixelRatio);
     this._refreshDrawConstants();
     this._refreshColorZonePadding();
   }
@@ -220,7 +221,7 @@ export class OverviewRulerRenderer extends Disposable {
     if (this._animationFrame !== undefined) {
       return;
     }
-    this._animationFrame = window.requestAnimationFrame(() => {
+    this._animationFrame = this._parentWindow.requestAnimationFrame(() => {
       this._refreshDecorations();
       this._animationFrame = undefined;
     });
